@@ -1,25 +1,69 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import readXlsxFile from 'read-excel-file';
 
-function App() {
+const App = () => {
+  const [groups, setGroups] = useState([]);
+  const [fileData, setFileData] = useState(null);
+
+  const importExcelData = e => {
+    const readFile = async () => {
+      const data = await readXlsxFile(e.target.files[0]);
+      console.log('___rows', data);
+
+      setFileData(data);
+    };
+
+    readFile();
+  };
+
+  useEffect(() => {
+    if (fileData) {
+      const keys = fileData[0];
+      const values = fileData.slice(1);
+
+      console.log('values', values);
+
+      const newGroups = values.map(item =>
+        item.reduce((acc, curr, idx) => {
+          return {
+            ...acc,
+            [keys[idx]]: curr,
+          };
+        }, {})
+      );
+
+      console.log('teste', newGroups);
+
+      setGroups([...newGroups]);
+    }
+  }, [fileData]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App" style={{ padding: '1em' }}>
+      <br />
+      <br />
+      <input type="file" onChange={importExcelData} />
+
+      <br />
+      <br />
+      <br />
+      <br />
+
+      {groups?.map((group, idx) => (
+        <div key={idx}>
+          <strong>Group: {idx + 1}</strong>
+
+          <ul>
+            {Object.entries(group).map(([key, value]) => (
+              <li key={`${key}-${value}`}>
+                <strong>{key}</strong> : {value}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
-}
+};
 
 export default App;
